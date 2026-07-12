@@ -18,7 +18,65 @@ The target state is a cloud-native, event-driven microservices platform designed
 
 ## High-Level Architecture
 
-Internet ---> CDN/WAF ---> Load Balancer ---> API Gateway ---> Microservices ---> Kafka Event Bus ---> Independent DBs ---> Elasticsearch/Redis
+                                           +----------------------+
+                                           |      Internet        |
+                                           +----------+-----------+
+                                                      |
+                                                      v
+                                           +----------------------+
+                                           |      CDN / WAF       |
+                                           +----------+-----------+
+                                                      |
+                                                      v
+                                           +----------------------+
+                                           |    Load Balancer     |
+                                           +----------+-----------+
+                                                      |
+                                                      v
+                                           +----------------------+
+                                           |     API Gateway      |
+                                           +----------+-----------+
+                                                      |
+                           -----------------------------------------------------
+                           |            |             |            |            |
+                           v            v             v            v            v
+                  +-------------+ +-------------+ +-------------+ +-------------+ +-------------+
+                  | Product MS  | | Search MS   | | Pricing MS  | | Inventory MS| | Customer MS |
+                  +------+------+ +------+------+ +------+------+ +------+------+ +------+------+
+                         |                |               |               |               |
+                         |                |               |               |               |
+                  +------+------+ +------+------+ +------+------+ +------+------+ +------+------+
+                  | Cart MS     | | Checkout MS | | Payment MS | | Order MS    | | Notification|
+                  +------+------+ +------+------+ +------+------+ +------+------+ +------+------+
+                           \            |              |               /
+                            \           |              |              /
+                             \          |              |             /
+                              +---------+--------------+------------+
+                                        |
+                                        v
+                              +----------------------+
+                              |   Kafka Event Bus    |
+                              +----------+-----------+
+                                         |
+        -------------------------------------------------------------------------------
+        |              |              |              |              |                 |
+        v              v              v              v              v                 v
+ +---------------+ +---------------+ +---------------+ +---------------+ +---------------+ +---------------+
+ | Product DB    | | Pricing DB    | | Inventory DB  | | Customer DB   | | Order DB      | | Payment DB    |
+ +---------------+ +---------------+ +---------------+ +---------------+ +---------------+ +---------------+
+
+                    +--------------------+          +----------------------+
+                    |      Redis         |          |    Elasticsearch     |
+                    | Cache / Sessions   |          | Search Index         |
+                    +--------------------+          +----------------------+
+
+                                        |
+                                        v
+                              +----------------------+
+                              | Monitoring & Logging |
+                              | Prometheus/Grafana   |
+                              | ELK / OpenTelemetry  |
+                              +----------------------+
 
 The platform is built so that traffic enters through a secure edge layer, is routed through the API gateway, and is served by independently deployed microservices. Events flow asynchronously through Kafka and data is stored in service-specific stores, with search and cache layers for performance.
 
